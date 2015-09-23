@@ -1,6 +1,6 @@
 <?php
 $projects = Array(1420598, 1425026, 1431288);
-$project_id = 1420598;
+
 function get_data($p_id, $endpoint)
 {
 
