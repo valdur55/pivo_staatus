@@ -31,18 +31,27 @@ function get_data($p_id, $endpoint)
 function get_row($pid)
 {
     $row = Array();
+
+    //Projekti nimi
     $data = get_data($pid, "");
     array_push($row, $data->name);
+
+    //Viimase uuenduse pealkiri ja aeg
     $data = get_data($pid, "activity?limit=1&offset=0");
     array_push($row, $data[0]->message);
     array_push($row, $data[0]->occurred_at);
+
+    //Viimane commit ja aeg
     $data = get_data($pid, "");
     //echo "Viimase commiti aeg: ".($act[1]->occurred_at) . "<br>";
     //echo "Viimane commit: " . ($act[1]->changes[0]->new_values->text);
     array_push($row, "Commit sonum");
     array_push($row, "Commit aeg");
+
+    //Acceptimata storyd
     $data = get_data($pid, "stories?with_state=delivered");
     array_push($row, count($data));
+
     return $row;
 
 }
