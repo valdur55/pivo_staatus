@@ -1,5 +1,5 @@
 <?php
-$projects = Array(1420598, 1425026, 1431288);
+$projects = Array(1420598, 1425026, 1431288, 1431204);
 
 function get_data($p_id, $endpoint)
 {
@@ -15,16 +15,14 @@ function get_data($p_id, $endpoint)
         CURLOPT_CUSTOMREQUEST => "GET",
     ));
 
-    $response = curl_exec($curl);
+    $response = json_decode(curl_exec($curl));
     $err = curl_error($curl);
 
     curl_close($curl);
     if ($err) {
         //echo "cURL Error #:" . $err;
     } else {
-        $act = json_decode($response);
-
-        return $act;
+        return $response;
     }
 }
 
@@ -37,12 +35,15 @@ function get_row($pid)
     array_push($row, $data->name);
 
     //Viimase uuenduse pealkiri ja aeg
-    $data = get_data($pid, "activity?limit=1&offset=0&fields=message%2Coccurred_at");
+    $data = get_data($pid, "activity?limit=1&offset=0&fields=message,occurred_at");
     array_push($row, $data[0]->message);
     array_push($row, $data[0]->occurred_at);
 
     //Viimane commit ja aeg
-    $data = get_data($pid, "");
+    $data = get_data($pid, "stories?fields=comments(text,commit_typepdated_at)");
+    //foreach ($data as &$story){
+    //    if($story->comments &&){
+    //}
     //echo "Viimase commiti aeg: ".($act[1]->occurred_at) . "<br>";
     //echo "Viimane commit: " . ($act[1]->changes[0]->new_values->text);
     array_push($row, "Commit sonum");
@@ -56,7 +57,7 @@ function get_row($pid)
 
 }
 
-$pealkiri = Array("Projekti nimi", "Viimase  kande pealkir", "Aeg", "Commiti message", "Aeg", "Acceptimata storyd");
+$pealkiri = Array("Projekti nimi", "Viimase  kande pealkiri", "Aeg", "Commiti message", "Aeg", "Acceptimata storyd");
 ?>
 
 <!DOCTYPE html>
