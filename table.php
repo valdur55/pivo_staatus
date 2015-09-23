@@ -74,7 +74,7 @@ $pealkiri = Array("Projekti nimi", "Viimase  kande pealkir", "Aeg", "Commiti mes
         <tr>
             <? foreach ($rida as &$tulp): ?>
 
-                <td><? $tulp ?></td>
+                <td><?= $tulp ?></td>
 
             <? endforeach ?>
         </tr>
