@@ -33,11 +33,11 @@ function get_row($pid)
     $row = Array();
 
     //Projekti nimi
-    $data = get_data($pid, "");
+    $data = get_data($pid, "?fields=name");
     array_push($row, $data->name);
 
     //Viimase uuenduse pealkiri ja aeg
-    $data = get_data($pid, "activity?limit=1&offset=0");
+    $data = get_data($pid, "activity?limit=1&offset=0&fields=message%2Coccurred_at");
     array_push($row, $data[0]->message);
     array_push($row, $data[0]->occurred_at);
 
@@ -49,7 +49,7 @@ function get_row($pid)
     array_push($row, "Commit aeg");
 
     //Acceptimata storyd
-    $data = get_data($pid, "stories?with_state=delivered");
+    $data = get_data($pid, "stories?with_state=delivered&fields=id");
     array_push($row, count($data));
 
     return $row;
