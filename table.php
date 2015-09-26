@@ -1,68 +1,114 @@
 <?php
-$projects = Array(1420598, 1425026, 1431288, 1431204);
 
-function get_data($p_id, $endpoint)
-{
+$projects = Array(1420598,1425026, 1431288, 1431204);
+class Worker{
+    var $PIVO_SERVICE_URL = "/services/v5/projects/";
+    var $projects;
+    var $cdata;
+    var $tdata;
+    var $row_data = array (
+        'name' => "/?fields=name",
+        'last_update' => "/activity?limit=1&offset=0&fields=message,occurred_at",
+        'last_commit' => "/activity?limit=20&fields=kind,changes",
+        'delivered' => "/stories?with_state=delivered&fields=id",
+    );
 
-    $curl = curl_init();
-    curl_setopt_array($curl, array(
-        CURLOPT_URL => "https://www.pivotaltracker.com/services/v5/projects/$p_id/$endpoint",
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_ENCODING => "",
-        CURLOPT_MAXREDIRS => 10,
-        CURLOPT_TIMEOUT => 30,
-        CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-        CURLOPT_CUSTOMREQUEST => "GET",
-    ));
-
-    $response = json_decode(curl_exec($curl));
-    $err = curl_error($curl);
-
-    curl_close($curl);
-    if ($err) {
-        //echo "cURL Error #:" . $err;
-    } else {
-        return $response;
+    function Worker($projects){
+        $this->projects = $projects;
+        $this->cdata=$this->get_curl_data();
     }
-}
+    function get_url($pid,$endpoint){
+        return $this->PIVO_SERVICE_URL.$pid.$endpoint;
+    }
 
-function get_row($pid)
-{
-    $row = Array();
+    function make_urls() {
+        $pages = array();
+        foreach($this->projects as $pid) {
+            foreach($this->row_data as $k => $endpoint){
+                array_push($pages, $this->get_url($pid, $endpoint));
+            }
+        }
+        return json_encode($pages);
 
-    //Projekti nimi
-    $data = get_data($pid, "?fields=name");
-    array_push($row, $data->name);
+    }
 
-    //Viimase uuenduse pealkiri ja aeg
-    $data = get_data($pid, "activity?limit=1&offset=0&fields=message,occurred_at");
-    array_push($row, $data[0]->message);
-    array_push($row, $data[0]->occurred_at);
+    function get_curl_data(){
 
-    //Viimane commit ja aeg
-    $data = get_data($pid, "activity?limit=10");
-    $no_commits=True;
-    foreach ($data as &$act){
-        if($act->kind == "comment_create_activity" && array_key_exists("commit_type", $act->changes[0]->new_values)){
-            array_push($row, $act->changes[0]->new_values->text);
-            array_push($row, $act->occurred_at);
-            $no_commits=False;
-            break;
+        $curl = curl_init();
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => "https://www.pivotaltracker.com/services/v5/aggregator",
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => "",
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_HTTPHEADER => array('Content-Type:application/json'),
+            CURLOPT_HEADER => false,
+            CURLOPT_POST => 1,
+            CURLOPT_POSTFIELDS => $this->make_urls(),
+        ));
+
+        $response = json_decode(curl_exec($curl));
+        $err = curl_error($curl);
+        curl_close($curl);
+        if ($err) {
+            //echo "cURL Error #:" . $err;
+        } else {
+            return $response;
         }
     }
-    if ($no_commits){
-        array_push($row, "-");
-        array_push($row, "-");
+
+    function get_data($pid, $endpoint) {
+        $url=$this->get_url($pid, $this->row_data[$endpoint]);
+        return $this->cdata->$url;
     }
 
-    //Acceptimata storyd
-    $data = get_data($pid, "stories?with_state=delivered&fields=id");
-    array_push($row, count($data));
 
-    return $row;
+    public function get_row($pid)
+    {
+        $row = Array();
+        //Projekti nimi
+        $data = $this->get_data($pid, 'name');
+        array_push($row, $data->name);
 
+        //Viimase uuenduse pealkiri ja aeg
+        $data = $this->get_data($pid, 'last_update');
+        array_push($row, $data[0]->message);
+        array_push($row, $data[0]->occurred_at);
+
+        //Viimane commit ja aeg
+        $data = $this->get_data($pid, 'last_commit');
+        $no_commits=True;
+        foreach ($data as &$act){
+            if($act->kind == "comment_create_activity" && array_key_exists("commit_type", $act->changes[0]->new_values)){
+                array_push($row, $act->changes[0]->new_values->text);
+                array_push($row, $act->changes[0]->new_values->updated_at);
+                $no_commits=False;
+                break;
+            }
+        }
+        if ($no_commits){
+            array_push($row, "-");
+            array_push($row, "-");
+        }
+
+        //Acceptimata storyd
+        $data = $this->get_data($pid, 'delivered');
+        array_push($row, count($data));
+
+        return $row;
+
+    }
+
+    public function get_table_data(){
+        $tdata = array();
+        foreach($this->projects as $pid){
+            array_push($tdata,$this->get_row($pid));
+        }
+        return $tdata;
+    }
 }
 
+$rows = new worker($projects);
 $pealkiri = Array("Projekti nimi", "Viimase  kande pealkiri", "Aeg", "Commiti message", "Aeg", "Acceptimata storyd");
 ?>
 
@@ -84,20 +130,17 @@ $pealkiri = Array("Projekti nimi", "Viimase  kande pealkiri", "Aeg", "Commiti me
 
     </thead>
 
-    <?php foreach ($projects as $pid):
-        $rida = get_row($pid); ?>
-
+    <?php foreach ($rows->get_table_data() as $row): ?>
         <tr>
-            <? foreach ($rida as &$tulp): ?>
+            <? foreach ($row as &$column): ?>
 
-                <td><?= $tulp ?></td>
+                <td><?= $column ?></td>
 
             <? endforeach ?>
         </tr>
 
     <? endforeach ?>
 </table>
-
 
 </body>
 </html>
