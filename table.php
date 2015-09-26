@@ -17,6 +17,7 @@ class Worker{
         $this->projects = $projects;
         $this->cdata=$this->get_curl_data();
     }
+
     function get_url($pid,$endpoint){
         return $this->PIVO_SERVICE_URL.$pid.$endpoint;
     }
@@ -63,8 +64,7 @@ class Worker{
     }
 
 
-    public function get_row($pid)
-    {
+    function get_row($pid){
         $row = Array();
         //Projekti nimi
         $data = $this->get_data($pid, 'name');
