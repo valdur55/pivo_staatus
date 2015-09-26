@@ -40,14 +40,20 @@ function get_row($pid)
     array_push($row, $data[0]->occurred_at);
 
     //Viimane commit ja aeg
-    $data = get_data($pid, "stories?fields=comments(text,commit_typepdated_at)");
-    //foreach ($data as &$story){
-    //    if($story->comments &&){
-    //}
-    //echo "Viimase commiti aeg: ".($act[1]->occurred_at) . "<br>";
-    //echo "Viimane commit: " . ($act[1]->changes[0]->new_values->text);
-    array_push($row, "Commit sonum");
-    array_push($row, "Commit aeg");
+    $data = get_data($pid, "activity?limit=10");
+    $no_commits=True;
+    foreach ($data as &$act){
+        if($act->kind == "comment_create_activity" && array_key_exists("commit_type", $act->changes[0]->new_values)){
+            array_push($row, $act->changes[0]->new_values->text);
+            array_push($row, $act->occurred_at);
+            $no_commits=False;
+            break;
+        }
+    }
+    if ($no_commits){
+        array_push($row, "-");
+        array_push($row, "-");
+    }
 
     //Acceptimata storyd
     $data = get_data($pid, "stories?with_state=delivered&fields=id");
