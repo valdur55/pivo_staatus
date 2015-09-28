@@ -1,20 +1,28 @@
 <?php
 
-//$projects = Array(1437300);
-$projects = Array();
-$file = fopen("VS15 Projektid - Pseudoülesannete projekt.csv","r");
+$csv_name="VS15 Projektid - Pseudoülesannete projekt.csv";
+function get_projects($csv_name) {
+    $projects = Array();
+    $file = fopen($csv_name,"r") or fopen($csv_name.".repo","r") or false;
+    if (!$file) {
+        $projects[1437300]="Kana, Valdur";
+        return $projects;
+    }
 
-while(! feof($file))
-//FIXME:csv file withot read premission gives endless loop.
-      {
-          $line = fgetcsv($file);
-          if (stristr($line[2], 'pivotaltracker.com/n/projects/', false) ){
-              $p_link = explode("/",$line[2]);
-              $projects[$p_link[5]]=$line[0];
-              //$projects[]=
-          }
+    while(! feof($file))
+          {
+              $line = fgetcsv($file);
+              if (stristr($line[2], 'pivotaltracker.com/n/projects/', false) ){
+                  $p_link = explode("/",$line[2]);
+                  $projects[$p_link[5]]=$line[0];
+                  //$projects[]=
               }
-fclose($file);
+                  }
+    fclose($file);
+    return $projects;
+}
+
+$projects=get_projects($csv_name);
 
 class Worker{
     var $PIVO_SERVICE_URL = "/services/v5/projects/";
