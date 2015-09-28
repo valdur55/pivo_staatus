@@ -68,7 +68,8 @@ class Worker{
         $row = Array();
         //Projekti nimi
         $data = $this->get_data($pid, 'name');
-        array_push($row, $data->name);
+        $name = '<a href=https://www.pivotaltracker.com/n/projects/'.$data->id.'>'.$data->name.'</a>';
+        array_push($row, $name);
 
         //Viimase uuenduse pealkiri ja aeg
         $data = $this->get_data($pid, 'last_update');
