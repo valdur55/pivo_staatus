@@ -1,11 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pivotal_tracker tabelina</title>
+</head>
+<body>
+    <pre>
 <?php
 
 $csv_name="VS15 Projektid - Pseudoülesannete projekt.csv";
 function get_projects($csv_name) {
     $projects = Array();
+    $projects[1437300]="Kana, Valdur";
+
     $file = fopen($csv_name,"r") or fopen($csv_name.".repo","r") or false;
     if (!$file) {
-        $projects[1437300]="Kana, Valdur";
         return $projects;
     }
 
@@ -15,7 +24,6 @@ function get_projects($csv_name) {
               if (stristr($line[2], 'pivotaltracker.com/n/projects/', false) ){
                   $p_link = explode("/",$line[2]);
                   $projects[$p_link[5]]=$line[0];
-                  //$projects[]=
               }
                   }
     fclose($file);
@@ -101,6 +109,7 @@ class Worker{
             $name = '<a href=https://www.pivotaltracker.com/n/projects/'.$data->id.'>'.$data->name.'</a>';
             array_push($row, $name);
         };
+
         //Viimase uuenduse pealkiri ja aeg
         $data = $this->get_data($pid, 'last_update');
         array_push($row, $data[0]->message);
@@ -117,6 +126,7 @@ class Worker{
                 break;
             }
         }
+
         if ($no_commits){
             array_push($row, "-");
             array_push($row, "-");
@@ -149,13 +159,7 @@ $with_error = $pivo_staatus->get_with_error();
 $pealkiri = Array("Projekti nimi", "Viimase  kande pealkiri", "Aeg", "Commiti message", "Aeg", "Acceptimata storyd");
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Pivotal_tracker tabelina</title>
-</head>
-<body>
+</pre>
 
 <?php if($with_error): ?>
     <h2>Järgmiste isikute Pivotal Trackeri projekti lugemisega tekkis probleem:</h2>
