@@ -13,7 +13,7 @@ function get_projects($csv_name) {
     $projects = Array();
     $projects[1437300]="Kana, Valdur";
 
-    $file = fopen($csv_name,"r") or fopen($csv_name.".repo","r") or false;
+    $file = fopen($csv_name,"r") or false;
     if (!$file) {
         return $projects;
     }
