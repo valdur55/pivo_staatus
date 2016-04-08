@@ -8,7 +8,6 @@
     <pre>
 <?php
 
-
 //$csv_name="VS15 Projektid - Pseudoülesannete projekt.csv";
 $csv_name='https://docs.google.com/spreadsheets/d/1j44KDS8Y_fuRkz7-9jjvjp1FQamFJPIgpGTpZFFN5UQ/pub?gid=1233420782&single=true&output=csv';
 function get_projects($csv_name) {
